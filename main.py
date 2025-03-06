@@ -16,7 +16,8 @@ def hello_world():
 
 @app.get("/listar-reviews")
 def listar_reviews():
-    return ReviewService.get_listagem()
+    pFiltroTexto = request.args.get('pFiltroTexto', default='', type=str)
+    return ReviewService.get_listagem(pFiltroTexto)
 
 @app.get("/consultar-por-id/<int:pId>")
 def consultar_por_id(pId:int):
@@ -35,10 +36,6 @@ def cadastrar():
 def alterar():
     pModel = ReviewLivroCadastroModel.from_dict(request.get_json()["registro"])
     return ReviewService.alterar_review(pModel)
-
-@app.post("/mock-cadastrar-review")
-def mock_cadastrar():
-    return ReviewService.mock_cadastrar_review()
 
 
 init_database(app)

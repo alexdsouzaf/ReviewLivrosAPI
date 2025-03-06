@@ -4,7 +4,7 @@ from flask import jsonify
 from DataBase.dbService import get_database
 from reviewLivroCadastroModel import ReviewLivroCadastroModel
 
-# todo achar um jeito de manipular os resultados da query com meu proprio modelo do que um dict
+# ? essas querys em string são a coisa mais insegura e feia possivel mas é o que temos pra hoje
 class ReviewService:
     def __init__(self):
         pass
@@ -18,10 +18,16 @@ class ReviewService:
         return jsonify(dictionary)
     
     @staticmethod
-    def get_listagem():
+    def get_listagem(pFiltroTexto:str):
         context = get_database()
         cursor = context.cursor()
-        query = cursor.execute('select * from reviews')
+
+        query = 'select * from reviews'
+
+        if (pFiltroTexto != ""):
+            query += " where titulo like '%{}%'".format(pFiltroTexto)
+
+        query = cursor.execute(query)
         dictionary = [dict(row) for row in query]
         return jsonify(dictionary)
 
@@ -46,21 +52,6 @@ class ReviewService:
             context = get_database()
             cursor = context.cursor()
             cursor.execute(f'update reviews set titulo = ?, review = ? where id = ?',(pModel.titulo,pModel.review,pModel.id))
-            context.commit()
-        except sqlite3.Error as e:
-            context.rollback()
-            return jsonify({'error':str(e)}),500
-        finally:
-            context.close()
-        
-        return jsonify(200);
-
-    @staticmethod
-    def mock_cadastrar_review():
-        try:
-            context = get_database()
-            cursor = context.cursor()
-            cursor.execute('insert into reviews (titulo,review) values (?,?)',('titulo_teste','review_teste'))
             context.commit()
         except sqlite3.Error as e:
             context.rollback()
